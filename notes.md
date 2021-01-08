@@ -78,17 +78,17 @@ Implémenter les fonctions nécessaires au chargement d’une tâche en mémoire
  * | (impossible address) |
  * +----------------------+ 0x00007fffffffffff
  * | User                 |
- * | (text + data + heap) | 0x2000000030 /* Only the first 2 MiB are identity mapped and not cached => page fault*/
- * +----------------------+ 0x2000000000
+ * | (text + data + heap) | 0x2000000030 -> page fault
+ * +----------------------+ 0x2000000000 = 128 GiB
  * | User                 |   
  * | (stack)              |
- * +----------------------+ 0x40000000
+ * +----------------------+ 0x40000000 = 1 GiB
  * | Kernel               |
  * | (valloc)             |
  * +----------------------+ 0x201000
  * | Kernel               |
  * | (APIC)               |
- * +----------------------+ 0x200000
+ * +----------------------+ 0x200000 = 2 MiB
  * | Kernel               |
  * | (text + data)        |
  * +----------------------+ 0x100000
@@ -101,4 +101,7 @@ Seules les premières 2 MiB adresses sont mappées. L'adresse 0x2000000030 n'ét
 
 ### Question 2
 
-Il faut conserver les adresses qui contiennent le code du kernel, soit entre 0x0 et 0x40000000, qui ne doivent pas être changées même si on change de contexte.
+Il faut conserver les adresses entre 0x40000000 et 0x2000000000 car les processus s'attendent toujours à ce que ces adresses soient accessibles.
+
+
+### Question 3
