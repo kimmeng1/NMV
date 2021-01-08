@@ -8,29 +8,29 @@
 #include <vga.h>                                         /* provides clear() */
 #include <x86.h>                                    /* access to cr3 and cr2 */
 
+
+
 void print_pgt(paddr_t pml, uint8_t lvl)
 {
-	uint64_t *page_entry = (uint64_t*)pml;
-	printk("PML%d (%p)\n", lvl, page_entry);
-	int i;
-	paddr_t next_pml;
-	
-	for(i = 0 ; i<512 ; i++)
-	{
-		if(*page_entry & 0x1) /* if page is valid */
-		{	
-			next_pml = *page_entry & 0x0007FFFFFFFFF800; /* overwrite the pointer address and mask the bits */
+	paddr_t *page_entry = pml;
+	printk("PML%d (%p)\n", lvl, pml);
 
-			if(lvl == 2 && *page_entry & 0x80)	/* if huge page */
+	paddr_t addr_mask = 0x0000FFFFFFFFF000;
+	paddr_t next_pml;
+
+	int i;
+	for(i = 0; i < 512; i++) {
+		if(*page_entry & 0x1) { /* if page is valid */
+			next_pml = *page_entry & addr_mask; /* mask the bits */
+
+			if(lvl == 2 && *page_entry & 0x80) /* if huge page */
 				printk("PML%d -> Huge page (%p)\n", lvl, next_pml);
 
 			else if(lvl == 1) /* if last level */
 				printk("PML%d -> Page (%p)\n", lvl, next_pml);
 
 			else
-			{
 				print_pgt(next_pml, --lvl);
-			}
 		}
 		page_entry++; /* pointer arithmetic */
 	}

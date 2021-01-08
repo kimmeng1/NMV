@@ -76,9 +76,9 @@ void free_page(paddr_t addr)
  * | (impossible address) |
  * +----------------------+ 0x00007fffffffffff
  * | User                 |
- * | (text + data + heap) |
+ * | (text + data + heap) | 
  * +----------------------+ 0x2000000000
- * | User                 |   2000000030
+ * | User                 |   
  * | (stack)              |
  * +----------------------+ 0x40000000
  * | Kernel               |
@@ -111,23 +111,21 @@ void map_page(struct task *ctx, vaddr_t vaddr, paddr_t paddr)
 {
 	int lvl, index;
 	vaddr_t *page_entry = (vaddr_t *) ctx->pgt;
-	uint64_t addr_mask = 0x0007FFFFFFFFF800;
+	paddr_t addr_mask = 0x0000FFFFFFFFF000;
 
-	for (lvl = 4; lvl > 1; --lvl)
-	{	
+	for (lvl = 4; lvl > 1; --lvl){	
 		index = ((vaddr>>(12+((lvl-1)*9)))<<55)>>55;
 		page_entry = page_entry + index;
 		
-		if (!(*page_entry & 0x1))// if empty or invalid
-		{
-			*page_entry = (paddr_t)alloc_page() | 0x7;
-		}
-		page_entry = (uint64_t*) (*page_entry & addr_mask);
+		if (!(*page_entry & 0x1)) /* if empty or invalid */
+			*page_entry = (paddr_t)alloc_page() | 0x7; /* U/S + R/W + P */
+		
+		page_entry = *page_entry & addr_mask; /* mask the bits */
 	}
 
 	index = ((vaddr>>(12+((lvl-1)*9)))<<55)>>55;
 	page_entry = page_entry + index;
-	*page_entry = paddr | 0x7;
+	*page_entry = paddr | 0x7; /* U/S + R/W + P */
 }
 
 void load_task(struct task *ctx)

@@ -68,4 +68,37 @@ Implémenter les fonctions nécessaires au chargement d’une tâche en mémoire
 
 ### Question 1
 
+```C
+ * Memory model for Rackdoll OS
+ *
+ * +----------------------+ 0xffffffffffffffff
+ * | Higher half          |
+ * | (unused)             |
+ * +----------------------+ 0xffff800000000000
+ * | (impossible address) |
+ * +----------------------+ 0x00007fffffffffff
+ * | User                 |
+ * | (text + data + heap) | 0x2000000030 /* Only the first 2 MiB are identity mapped and not cached => page fault*/
+ * +----------------------+ 0x2000000000
+ * | User                 |   
+ * | (stack)              |
+ * +----------------------+ 0x40000000
+ * | Kernel               |
+ * | (valloc)             |
+ * +----------------------+ 0x201000
+ * | Kernel               |
+ * | (APIC)               |
+ * +----------------------+ 0x200000
+ * | Kernel               |
+ * | (text + data)        |
+ * +----------------------+ 0x100000
+ * | Kernel               |
+ * | (BIOS + VGA)         |
+ * +----------------------+ 0x0
+```
+Seules les premières 2 MiB adresses sont mappées. L'adresse 0x2000000030 n'étant pas mappée, cela produit alors une faute de page.
 
+
+### Question 2
+
+Il faut conserver les adresses qui contiennent le code du kernel, soit entre 0x0 et 0x40000000, qui ne doivent pas être changées même si on change de contexte.
