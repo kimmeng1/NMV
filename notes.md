@@ -53,14 +53,6 @@ On peut bien accéder à l'adresse 0x201000.
 0000000000201030: 0x0000000000000000 0x0000000000000000
 ```
 
-### Divers
-
-En général, la mémoire virtuelle et la mémoire physique sont structurées en unités d’allocations (pages pour la mémoire virtuelle et cadres pour la mémoire physique).
-
-Les adresses virtuelles référencées par l’instruction en cours doivent
-être traduites en adresses physiques. Cette conversion d’adresse est effectuée par des circuits matériels de gestion. Si cette adresse correspond à une
-adresse en mémoire physique, on transmet sur le bus l’adresse réelle, sinon
-il se produit un défaut de page.
 
 ## Exercice 3
 
