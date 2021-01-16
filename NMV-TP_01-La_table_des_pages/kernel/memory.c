@@ -9,11 +9,6 @@
 #define BITSET_SIZE          (PHYSICAL_POOL_PAGES >> 6)
 
 
-
-// retrouve l'index pour une adresse virtuel et un niveau donne.
-#define INDEX(vaddr, lvl)    ((((vaddr>>12)>>((lvl-1))*9)<<55)>>55)
-
-
 extern __attribute__((noreturn)) void die(void);
 
 static uint64_t bitset[BITSET_SIZE];
@@ -79,7 +74,7 @@ void free_page(paddr_t addr)
  * | (text + data + heap) | 
  * +----------------------+ 0x2000000000
  * | User                 |   
- * | (stack)              |
+ * | (stack)              |	
  * +----------------------+ 0x40000000
  * | Kernel               |
  * | (valloc)             |
@@ -130,25 +125,67 @@ void map_page(struct task *ctx, vaddr_t vaddr, paddr_t paddr)
 
 void load_task(struct task *ctx)
 {
+	paddr_t pml4 = alloc_page();
+	paddr_t pml3 = alloc_page();
+	paddr_t pml2 = alloc_page();
+	paddr_t pml1 = alloc_page();
+
+	((paddr_t*)pml4)[0] = pml3 | 0x7;  // U/S | R/W | P
+	((paddr_t*)pml3)[0] = pml2 | 0x7;  // U/S | R/W | P
+
+	// kernel
+	((paddr_t*)pml2)[0] = 0x0 | 0x19b; // G | PS | PCD | PWT | R/W | P
+	((paddr_t*)pml1)[0] = 0xfee00000 | 0x11b;
+
+	ctx->pgt = pml4;
+
+	map_page(ctx, ctx->load_vaddr, ctx->load_paddr);
+
 }
 
 void set_task(struct task *ctx)
 {
+	load_cr3(ctx->pgt);
 }
 
 void mmap(struct task *ctx, vaddr_t vaddr)
 {
+	paddr_t paddr = alloc_page();
+	map_page(ctx, vaddr, paddr);
 }
 
 void munmap(struct task *ctx, vaddr_t vaddr)
-{
+{	
+	int lvl, index;
+		vaddr_t *page_entry = (vaddr_t *) ctx->pgt;
+		paddr_t addr_mask = 0x0000FFFFFFFFF000;
+
+		for (lvl = 4; lvl > 1; --lvl){	
+			index = ((vaddr>>(12+((lvl-1)*9)))<<55)>>55;
+			page_entry = page_entry + index;
+			
+			// if ((*page_entry & 0x1)) /* if empty or invalid */
+			// 	free_page(*page_entry);
+			
+			page_entry = *page_entry & addr_mask; /* mask the bits */
+		}
+
+		index = ((vaddr>>(12+((lvl-1)*9)))<<55)>>55;
+		page_entry = page_entry + index;
+		free_page(*page_entry);
 }
 
 void pgfault(struct interrupt_context *ctx)
 {
-	printk("Page fault at %p\n", ctx->rip);
-	printk("  cr2 = %p\n", store_cr2());
-	asm volatile ("hlt");
+	/* if legitimate memory access */
+	if(store_cr2() > 0x40000000 && store_cr2() < 0x00007fffffffffff) {
+		//task.h: struct task *current(void); /* Get the current task */
+		mmap(current(), store_cr2());
+	}else{
+		("Page fault at %p\n", ctx->rip);
+		printk("  cr2 = %p\n", store_cr2());
+		asm volatile ("hlt");
+	}
 }
 
 void duplicate_task(struct task *ctx)

@@ -61,13 +61,6 @@ Implémenter les fonctions nécessaires au chargement d’une tâche en mémoire
 ### Question 1
 
 ```C
- * Memory model for Rackdoll OS
- *
- * +----------------------+ 0xffffffffffffffff
- * | Higher half          |
- * | (unused)             |
- * +----------------------+ 0xffff800000000000
- * | (impossible address) |
  * +----------------------+ 0x00007fffffffffff
  * | User                 |
  * | (text + data + heap) | 0x2000000030 -> page fault
@@ -93,7 +86,38 @@ Seules les premières 2 MiB adresses sont mappées. L'adresse 0x2000000030 n'ét
 
 ### Question 2
 
-Il faut conserver les adresses entre 0x40000000 et 0x2000000000 car les processus s'attendent toujours à ce que ces adresses soient accessibles.
+Il faut conserver le code kernel, soit entre 0x0 et 0x40000000, qui ne doit jamais être jamais changé quelque soit la tâche courante.
 
 
 ### Question 3
+
+Adresses virtuelles:
+* début du _payload_: ctx->load_vaddr  
+* fin du _payload_: ctx->load_vaddr + (ctx->load_end_paddr - ctx->load_paddr)
+* début du _bss_: ctx->load_vaddr + (ctx->load_end_paddr - ctx->load_paddr) + 0x1
+* fin du _bss_: ctx->bss_end_vaddr
+
+
+## Exercice 4
+
+Implémenter les fonctions d'allocation.
+
+### Question 2
+```
+ * +----------------------+ 0x2000000000
+ * | User                 | 0x1ffffffff8  -> page fault
+ * | (stack)              |	
+ * +----------------------+ 0x40000000
+```
+Etant donné que l'adresse se trouve dans la pile, la faute de page est causée par un accès mémoire légitime.
+
+### Question 3
+(Cours) Sous Linux, l’allocation mémoire est paresseuse: 
+* Conséquence : malloc(1 << 40) retourne une adresse utilisable
+* La mémoire ne sera allouée quand l’adresse sera utilisée
+
+## Exercice 5
+
+Implémenter la fonction de libération.
+
+### 
