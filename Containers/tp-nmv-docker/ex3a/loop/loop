@@ -1,0 +1,11 @@
+#!/bin/bash
+HOSTNAME=$(hostname)
+
+echo "Looping"
+while [ ${HOSTNAME} == $(hostname) ]; do :; done;
+echo "The hostname changed"
+
+touch rmthisfile
+echo "Looping again"
+while [[ -e rmthisfile ]]; do :; done
+echo "rmthisfile does not exists"

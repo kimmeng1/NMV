@@ -1,0 +1,3 @@
+#!/bin/bash
+for c in $(grep processor /proc/cpuinfo); do (while :; do :; done) & done
+sleep inf

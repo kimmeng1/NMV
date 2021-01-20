@@ -1,0 +1,7 @@
+version: '2.2'
+services:
+  builder:
+    build: .
+    volumes:
+      - .:/host
+    command: [ "cp", "nsenter", "/host" ]

