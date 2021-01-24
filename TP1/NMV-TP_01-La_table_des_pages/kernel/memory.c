@@ -163,10 +163,7 @@ void munmap(struct task *ctx, vaddr_t vaddr)
 		for (lvl = 4; lvl > 1; --lvl){	
 			index = ((vaddr>>(12+((lvl-1)*9)))<<55)>>55;
 			page_entry = page_entry + index;
-			
-			// if ((*page_entry & 0x1)) /* if empty or invalid */
-			// 	free_page(*page_entry);
-			
+
 			page_entry = *page_entry & addr_mask; /* mask the bits */
 		}
 
@@ -179,7 +176,7 @@ void pgfault(struct interrupt_context *ctx)
 {
 	/* if legitimate memory access */
 	if(store_cr2() > 0x40000000 && store_cr2() < 0x00007fffffffffff) {
-		//task.h: struct task *current(void); /* Get the current task */
+		/* task.h: struct task *current(void); -> Get the current task */
 		mmap(current(), store_cr2());
 	}else{
 		("Page fault at %p\n", ctx->rip);

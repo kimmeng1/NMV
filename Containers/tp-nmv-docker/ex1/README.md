@@ -29,7 +29,7 @@ Complete the `Dockerfile` by adding the following building instructions:
 
 Run `docker build -t my_first_image .` to build your image.
 
-Run a container from this image.
+Run a container from this image: `docker run my_first_image /hello_world.sh`
 
 # The `RUN` instruction
 
@@ -42,6 +42,16 @@ Rewrite the `Dockerfile` to:
 1. `COPY` the `hello_world.c`,
 2. `RUN` gcc to compile hello_world (remember that without `-o`, gcc will output `a.out`)
 3. set hello_world as the `ENTRYPOINT`
+
+Dokerfile:
+```
+FROM gcc
+COPY hello_world.c /hello_world.c
+RUN gcc -o hello_world hello_world.c
+ENTRYPOINT [ "/hello_world" ]
+```
+
+To run: `docker run my_first_image /hello_world`
 
 Then build and run the resulting container.
 

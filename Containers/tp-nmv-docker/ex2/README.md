@@ -7,6 +7,7 @@ CPU:
 3. Measure its cpu consumption with `docker stats`
 4. Find an isolation option in docker to slow down its cpu consumption (ex: 1% of cpu)
 5. Measure its isolated cpu consumption with `docker stats`
+-> `docker run -d --cpu-quota=1000 cpuburn` (1% of cpu)
 
 MEMORY:
 

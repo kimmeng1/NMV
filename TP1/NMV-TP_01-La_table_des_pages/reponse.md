@@ -86,7 +86,7 @@ Seules les premières 2 MiB adresses sont mappées. L'adresse 0x2000000030 n'ét
 
 ### Question 2
 
-Il faut conserver le code kernel, soit entre 0x0 et 0x40000000, qui ne doit jamais être jamais changé quelque soit la tâche courante.
+Il faut conserver les plages d'aresses de la table courante réservées au kernel, soit entre 0x0 et 0x40000000, qui ne doit jamais changer quelque soit la tâche courante.
 
 
 ### Question 3
@@ -94,7 +94,7 @@ Il faut conserver le code kernel, soit entre 0x0 et 0x40000000, qui ne doit jama
 Adresses virtuelles:
 * début du _payload_: ctx->load_vaddr  
 * fin du _payload_: ctx->load_vaddr + (ctx->load_end_paddr - ctx->load_paddr)
-* début du _bss_: ctx->load_vaddr + (ctx->load_end_paddr - ctx->load_paddr) + 0x1
+* début du _bss_: fin du _payload_ + 0x1
 * fin du _bss_: ctx->bss_end_vaddr
 
 
